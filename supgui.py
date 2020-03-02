@@ -106,9 +106,8 @@ class FileSelectFrame(ttk.Frame):
         self.labInfo.grid(column=1, row=2, columnspan=2, sticky=(tk.N, tk.W))
 
     def fopen(self):
-        if self.reader is not None:
-            self.fclose()
-            self.reader = None
+        self.fclose()
+        self.reader = None
         self.textFilePath.set("Loading file, please wait...")
         filepath = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx *.xlsm"),))
         if filepath:
