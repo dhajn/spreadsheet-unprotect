@@ -63,7 +63,8 @@ class SpreadsheetReader:
         else:
             self.wbProt = False
 
-    def getZipInfolist(self):
+    @property
+    def zipInfolist(self):
         return self.infile.infolist()
 
     def getFile(self, zippedFileName):
@@ -109,7 +110,7 @@ class SpreadsheetWriter:
         else:
             sheetsToUnprotect = []
 
-        for zippedFile in reader.getZipInfolist():
+        for zippedFile in reader.zipInfolist:
             if workbook and zippedFile.filename == "xl/workbook.xml":
                 self.imz.append(zippedFile.filename, self._getUnprotectedXml(type="workbook", xml=reader.getFile(zippedFile).decode("utf-8")))
             elif zippedFile.filename in sheetsToUnprotect:
