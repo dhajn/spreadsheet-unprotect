@@ -67,15 +67,20 @@ class SpreadsheetReader:
         AllSheetsTuple = namedtuple("AllSheetsTuple",
                                     ["path", "name", "protected"])
         SheetsTuple = namedtuple("SheetsTuple", ["path", "name"])
+
+        def getPath(p):
+            return p[1:] if p[:4] == "/xl/" else "xl/" + p
+
         try:
             sheets = [
                 AllSheetsTuple(
-                    "xl/" + sheetPaths[i],
+                    getPath(sheetPaths[i]),
                     sheetRels[i],
-                    "<sheetProtection" in self.getFile(
-                        "xl/" + sheetPaths[i]).decode("utf-8"),
+                    "<sheetProtection" in self.getFile(getPath(
+                        sheetPaths[i])).decode("utf-8"),
                 ) for i in sheetRels.keys()
             ]
+
         except KeyError:
             raise BadSpreadsheetError("Sheet expected but not found")
         self.protectedSheets = [
