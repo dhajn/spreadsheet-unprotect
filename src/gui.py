@@ -12,7 +12,7 @@ def main():
 
 class Application(ttk.Frame):
     def __init__(self, master=None):
-        super().__init__(master, padding="10 10 10 10")               
+        super().__init__(master, padding="10 10 10 10")
         self.master = master
         self.master.protocol("WM_DELETE_WINDOW", self.onCloseWindow)
         self.master.title("Spreadsheet Unprotector")
@@ -25,11 +25,15 @@ class Application(ttk.Frame):
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
         self.fileSelectFrame = FileSelectFrame(master=self)
-        self.fileSelectFrame.grid(column=1, row=1, sticky=(tk.N, tk.W, tk.E, tk.S))
+        self.fileSelectFrame.grid(column=1,
+                                  row=1,
+                                  sticky=(tk.N, tk.W, tk.E, tk.S))
         self.columnconfigure(1, weight=1, minsize="250px")
 
         self.optionsFrame = OptionsFrame(master=self)
-        self.optionsFrame.grid(column=1, row=2, sticky=(tk.N, tk.W, tk.E, tk.S))
+        self.optionsFrame.grid(column=1,
+                               row=2,
+                               sticky=(tk.N, tk.W, tk.E, tk.S))
         self.rowconfigure(2, weight=1)
 
         self.buttonsFrame = ButtonsFrame(master=self)
@@ -51,7 +55,7 @@ class Application(ttk.Frame):
 
     def onCloseWindow(self):
         self.closeApplication()
-    
+
     def closeApplication(self):
         self.fileSelectFrame.fclose()
         self.master.destroy()
@@ -67,7 +71,10 @@ class Application(ttk.Frame):
             outType = ("Excel macro-enabled files", ".xlsm")
         else:
             outType = ("All files", "*.*")
-        path = filedialog.asksaveasfilename(initialdir=os.path.dirname(inName), initialfile=(os.path.basename(inName)+"_unprotected"+inExt), filetypes=(outType,))
+        path = filedialog.asksaveasfilename(
+            initialdir=os.path.dirname(inName),
+            initialfile=(os.path.basename(inName) + "_unprotected" + inExt),
+            filetypes=(outType, ))
         if path is None or path == "":
             return
         if os.path.splitext(path)[1] == "":
@@ -76,11 +83,16 @@ class Application(ttk.Frame):
         sheets = [reader.protectedSheets[i] for i in sheetIndexes]
         try:
             with SpreadsheetWriter(path) as w:
-                w.loadUnprotect(reader, workbook=wb, sheets=sheets, dumpVba=dumpVba)
+                w.loadUnprotect(reader,
+                                workbook=wb,
+                                sheets=sheets,
+                                dumpVba=dumpVba)
         except Exception as exc:
-            messagebox.showerror(title="Failed to write file", message="Error: " + str(exc))
+            messagebox.showerror(title="Failed to write file",
+                                 message="Error: " + str(exc))
             return
-        messagebox.showinfo(title="Successfully unprotected", message="Unprotected file saved to " + path)
+        messagebox.showinfo(title="Successfully unprotected",
+                            message="Unprotected file saved to " + path)
 
 
 class FileSelectFrame(ttk.Frame):
@@ -98,7 +110,9 @@ class FileSelectFrame(ttk.Frame):
         self.labFilePath = ttk.Label(self, textvariable=self.textFilePath)
         self.labFilePath.grid(column=2, row=1, sticky=tk.W)
 
-        self.butOpen = ttk.Button(self, text="Select file...", command=self.fopen)
+        self.butOpen = ttk.Button(self,
+                                  text="Select file...",
+                                  command=self.fopen)
         self.butOpen.grid(column=1, row=1, sticky=(tk.N, tk.W))
 
         self.textInfo = tk.StringVar(value="")
@@ -109,18 +123,24 @@ class FileSelectFrame(ttk.Frame):
         self.fclose()
         self.reader = None
         self.textFilePath.set("Loading file, please wait...")
-        filepath = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx *.xlsm"),))
+        filepath = filedialog.askopenfilename(filetypes=(("Excel files",
+                                                          "*.xlsx *.xlsm"), ))
         if filepath:
             try:
                 self.reader = SpreadsheetReader(filepath)
                 self.reader.parseWbSheets()
                 self.textFilePath.set("Loaded " + filepath)
             except FileNotFoundError:
-                messagebox.showerror(title="File not found", message="The file does not exist.")
+                messagebox.showerror(title="File not found",
+                                     message="The file does not exist.")
                 self.textFilePath.set("No file opened")
                 return
             except BadSpreadsheetError as exc:
-                messagebox.showerror(title="Failed to read file", message="Error: " + str(exc) + f"\n" + "The file is either corrupt, encrypted, or not a xlsx/xlsm file.")
+                messagebox.showerror(
+                    title="Failed to read file",
+                    message="Error: " + str(exc) + f"\n" +
+                    "The file is either corrupt, encrypted, or not a xlsx/xlsm file."
+                )
                 self.textFilePath.set("No file opened")
                 return
         else:
@@ -131,7 +151,10 @@ class FileSelectFrame(ttk.Frame):
 
     def updateOptions(self):
         if self.reader is not None:
-            self.master.optionsFrame.updateOptions(wbProtection=self.reader.wbProt, protectedSheets=self.reader.protectedSheets, hasVba=self.reader.hasVba)
+            self.master.optionsFrame.updateOptions(
+                wbProtection=self.reader.wbProt,
+                protectedSheets=self.reader.protectedSheets,
+                hasVba=self.reader.hasVba)
         else:
             self.master.optionsFrame.updateOptions()
 
@@ -139,8 +162,11 @@ class FileSelectFrame(ttk.Frame):
         if self.reader is None:
             self.textInfo.set("")
         else:
-            self.textInfo.set("> Found %d protected sheets and %d sheets without protection. Workbook %s protected."
-                                % (len(self.reader.protectedSheets), len(self.reader.unprotectedSheets), "is" if self.reader.wbProt else "not"))
+            self.textInfo.set(
+                "> Found %d protected sheets and %d sheets without protection. Workbook %s protected."
+                % (len(self.reader.protectedSheets),
+                   len(self.reader.unprotectedSheets),
+                   "is" if self.reader.wbProt else "not"))
 
     def fclose(self):
         if self.reader is not None:
@@ -159,34 +185,52 @@ class OptionsFrame(ttk.Frame):
 
     def createWidgets(self):
         self.chvarUnprotectWorkbook = tk.StringVar(value="0")
-        self.chboxUnprotectWorkbook = ttk.Checkbutton(self, text="Unprotect workbook", variable=self.chvarUnprotectWorkbook)
+        self.chboxUnprotectWorkbook = ttk.Checkbutton(
+            self,
+            text="Unprotect workbook",
+            variable=self.chvarUnprotectWorkbook)
         self.chboxUnprotectWorkbook.grid(column=1, row=1, sticky=tk.W)
 
         self.chvarDumpVba = tk.StringVar(value="0")
-        self.chboxDumpVba = ttk.Checkbutton(self, text="Remove VBA macros", variable=self.chvarDumpVba)
+        self.chboxDumpVba = ttk.Checkbutton(self,
+                                            text="Remove VBA macros",
+                                            variable=self.chvarDumpVba)
         self.chboxDumpVba.grid(column=1, row=2, sticky=tk.W)
 
         self.chvarUnprotectSheets = tk.StringVar(value="0")
-        self.chboxUnprotectSheets = ttk.Checkbutton(self, text="Unprotect sheets", command=self.onChangeChboxUnprotectSheets, variable=self.chvarUnprotectSheets)
+        self.chboxUnprotectSheets = ttk.Checkbutton(
+            self,
+            text="Unprotect sheets",
+            command=self.onChangeChboxUnprotectSheets,
+            variable=self.chvarUnprotectSheets)
         self.chboxUnprotectSheets.grid(column=1, row=3, sticky=tk.W)
 
         self.lvarProtectedSheets = tk.StringVar()
-        self.lboxSheets = tk.Listbox(self, height=10, listvariable=self.lvarProtectedSheets, selectmode="extended")
+        self.lboxSheets = tk.Listbox(self,
+                                     height=10,
+                                     listvariable=self.lvarProtectedSheets,
+                                     selectmode="extended")
         self.lboxSheets.grid(column=1, row=4, sticky=(tk.W, tk.N, tk.E, tk.S))
 
-        self.sbarSheets = ttk.Scrollbar(self, orient=tk.VERTICAL, command=self.lboxSheets.yview)
+        self.sbarSheets = ttk.Scrollbar(self,
+                                        orient=tk.VERTICAL,
+                                        command=self.lboxSheets.yview)
         self.lboxSheets.configure(yscrollcommand=self.sbarSheets.set)
         self.sbarSheets.grid(column=2, row=4, sticky=(tk.W, tk.N, tk.S))
 
         self.selectButtonsFrame = ttk.Frame(self)
         self.selectButtonsFrame.grid(column=3, row=4, sticky=(tk.W, tk.N))
 
-        self.butSelectAll = ttk.Button(self.selectButtonsFrame, text="Select all", command=self.onClickButSelectAll)
+        self.butSelectAll = ttk.Button(self.selectButtonsFrame,
+                                       text="Select all",
+                                       command=self.onClickButSelectAll)
         self.butSelectAll.grid(column=1, row=1, sticky=(tk.W, tk.N))
 
-        self.butUnselectAll = ttk.Button(self.selectButtonsFrame, text="Unselect all", command=self.onClickButUnselectAll)
+        self.butUnselectAll = ttk.Button(self.selectButtonsFrame,
+                                         text="Unselect all",
+                                         command=self.onClickButUnselectAll)
         self.butUnselectAll.grid(column=1, row=2, sticky=(tk.W, tk.N))
-        
+
         self.columnconfigure(1, weight=1)
 
     def onChangeChboxUnprotectSheets(self):
@@ -201,11 +245,16 @@ class OptionsFrame(ttk.Frame):
     def onClickButUnselectAll(self):
         self.lboxSheets.select_clear(0, "end")
 
-    def updateOptions(self, wbProtection=False, protectedSheets=None, hasVba=False):
-        self.chboxUnprotectWorkbook.configure(state=(tk.ACTIVE if wbProtection else tk.DISABLED))
+    def updateOptions(self,
+                      wbProtection=False,
+                      protectedSheets=None,
+                      hasVba=False):
+        self.chboxUnprotectWorkbook.configure(
+            state=(tk.ACTIVE if wbProtection else tk.DISABLED))
         self.chvarUnprotectWorkbook.set("1" if wbProtection else "0")
 
-        self.chboxDumpVba.configure(state=(tk.ACTIVE if hasVba else tk.DISABLED))
+        self.chboxDumpVba.configure(
+            state=(tk.ACTIVE if hasVba else tk.DISABLED))
 
         if protectedSheets is not None and len(protectedSheets) > 0:
             self.lvarProtectedSheets.set([i.name for i in protectedSheets])
@@ -229,7 +278,6 @@ class OptionsFrame(ttk.Frame):
         return wb, sheetIndexes, dumpVba
 
 
-
 class ButtonsFrame(ttk.Frame):
     def __init__(self, master, **kwargs):
         if kwargs is not None:
@@ -240,14 +288,19 @@ class ButtonsFrame(ttk.Frame):
         self.createWidgets()
 
     def createWidgets(self):
-        self.butUnprotect = ttk.Button(self, text="Unprotect...", command=self.onClickButUnprotect)
+        self.butUnprotect = ttk.Button(self,
+                                       text="Unprotect...",
+                                       command=self.onClickButUnprotect)
         self.butUnprotect.grid(column=2, row=1, sticky=(tk.S, tk.W))
 
-        self.butQuit = ttk.Button(self, text="Quit", command=self.master.closeApplication)
+        self.butQuit = ttk.Button(self,
+                                  text="Quit",
+                                  command=self.master.closeApplication)
         self.butQuit.grid(column=3, row=1, sticky=(tk.S, tk.E))
 
     def onClickButUnprotect(self):
         self.master.unprotectWrite()
+
 
 if __name__ == "__main__":
     main()
